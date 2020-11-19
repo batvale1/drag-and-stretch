@@ -103,6 +103,11 @@ export default {
     this.$refs.block.style.zIndex = this.zIndex;
     this.desktop.addEventListener('mousemove', this.move);
     this.desktop.addEventListener('mouseup', this.mouseUp);
+
+    this.$once('hook:beforeDestroy', () => {
+      this.desktop.removeEventListener('mousemove', this.move);
+      this.desktop.removeEventListener('mouseup', this.mouseUp);
+    })
   },
   watch: {
     width(newValue) {
