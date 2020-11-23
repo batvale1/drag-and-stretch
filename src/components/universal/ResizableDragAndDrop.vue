@@ -3,7 +3,6 @@
       :class="['block', {'block_active': isActive}]"
       ref="block"
       @mousedown.stop.prevent="startDragging"
-      @click="$emit('clicked')"
   >
     <div class="block__content">
       <slot></slot>
@@ -57,8 +56,6 @@ export default {
       startMousePageX: null,
       startMousePageY: null,
       direction: null,
-      gridAccX: 0,
-      gridAccY: 0
     }
   },
   props: {
@@ -89,7 +86,7 @@ export default {
     active: {
       type: Boolean,
       default: false
-    }
+    },
   },
   components: {
     DragPoint
@@ -135,12 +132,11 @@ export default {
       }
     },
     startDragging(event) {
+      this.$emit('bring-forward');
       this.isMoving = true;
       this.isActive = true;
       this.startMousePageX = event.pageX;
       this.startMousePageY = event.pageY;
-      this.gridAccX = 0;
-      this.gridAccY = 0;
     },
     dragging(event) {
       if (this.isMoving && this.isActive) {
@@ -150,24 +146,24 @@ export default {
         let y = this.y - currentMouseOffsetY;
         if (this.gridStep) {
 
-          if (Math.abs(this.gridAccX) - this.gridStep > 0) {
-            x = this.gridAccX > 0 ? this.x - this.gridStep : this.x + this.gridStep;
-            this.gridAccX = 0;
+          if (Math.abs(currentMouseOffsetX) >= this.gridStep) {
+            x = this.x - currentMouseOffsetX;
+            this.startMousePageX = event.pageX;
           } else {
             x = this.x;
-            this.gridAccX += currentMouseOffsetX;
           }
 
-          if (Math.abs(this.gridAccY) - this.gridStep > 0) {
-            y = this.gridAccY > 0 ? this.y - this.gridStep : this.y + this.gridStep;
-            this.gridAccY = 0;
+          if (Math.abs(currentMouseOffsetY) >= this.gridStep) {
+            y = this.y - currentMouseOffsetY;
+            this.startMousePageY = event.pageY;
           } else {
             y = this.y;
-            this.gridAccY += currentMouseOffsetY;
           }
+
+        } else {
+          this.startMousePageX = event.pageX;
+          this.startMousePageY = event.pageY;
         }
-        this.startMousePageX = event.pageX;
-        this.startMousePageY = event.pageY;
         this.$emit('position-change', {x, y});
       }
     },
@@ -177,7 +173,6 @@ export default {
       this.isActive = true;
       this.direction = direction;
       this.startMousePageX = event.pageX;
-      this.gridAccX = 0;
     },
 
     StretchingX(event) {
@@ -186,22 +181,18 @@ export default {
         let width = this.direction === 'left' ? this.width + currentMouseOffsetX : this.width - currentMouseOffsetX;
         let x = this.direction === 'left' ? this.x - currentMouseOffsetX : this.x;
         if (this.gridStep) {
-          if (Math.abs(this.gridAccX) - this.gridStep > 0) {
-            if (this.gridAccX > 0) {
-              width = this.direction === 'left' ? this.width + this.gridStep : this.width - this.gridStep;
-              x = this.direction === 'left' ? this.x - this.gridStep : this.x;
-            } else {
-              width = this.direction === 'left' ? this.width - this.gridStep : this.width + this.gridStep;
-              x = this.direction === 'left' ? this.x + this.gridStep : this.x;
-            }
-            this.gridAccX = 0;
+          if (Math.abs(currentMouseOffsetX) >= this.gridStep) {
+            width = this.direction === 'left' ? this.width + currentMouseOffsetX : this.width - currentMouseOffsetX;
+            x = this.direction === 'left' ? this.x - currentMouseOffsetX : this.x;
+            this.startMousePageX = event.pageX;
           } else {
             x = this.x;
             width = this.width;
-            this.gridAccX += currentMouseOffsetX;
           }
+        } else {
+          this.startMousePageX = event.pageX;
         }
-        this.startMousePageX = event.pageX;
+
         this.$emit('size-change', {width, height: this.height, x: x, y: this.y });
       }
     },
@@ -220,23 +211,18 @@ export default {
         let y = this.direction === 'top' ? this.y - currentMouseOffsetY : this.y;
 
         if (this.gridStep) {
-          if (Math.abs(this.gridAccY) - this.gridStep > 0) {
-            if (this.gridAccY > 0) {
-              height = this.direction === 'top' ? this.height + this.gridStep : this.height - this.gridStep;
-              y = this.direction === 'top' ? this.y - this.gridStep : this.y;
-            } else {
-              height = this.direction === 'top' ? this.height - this.gridStep : this.height + this.gridStep;
-              y = this.direction === 'top' ? this.y + this.gridStep : this.y;
-            }
-            this.gridAccY = 0;
+          if (Math.abs(currentMouseOffsetY) >= this.gridStep) {
+            height = this.direction === 'top' ? this.height + currentMouseOffsetY : this.height - currentMouseOffsetY;
+            y = this.direction === 'top' ? this.y - currentMouseOffsetY : this.y;
+            this.startMousePageY = event.pageY;
           } else {
             y = this.y;
             height = this.height;
-            this.gridAccY += currentMouseOffsetY;
           }
+        } else {
+          this.startMousePageY = event.pageY;
         }
 
-        this.startMousePageY = event.pageY;
         this.$emit('size-change', {width: this.width, height: height, x: this.x, y: y });
       }
     },
@@ -246,8 +232,8 @@ export default {
       this.isStretchingX = false;
       this.isStretchingY = false;
       this.isActive = false;
-    }
-  }
+    },
+  },
 }
 </script>
 

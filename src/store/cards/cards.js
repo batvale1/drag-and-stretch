@@ -91,8 +91,17 @@ const mutations = {
     if (elemToAdd) {
       elemToAdd = { ...elemToAdd, x, y, width, height }
       state.cards.push(elemToAdd);
+      let lastIndex = 1;
+      state.cards = state.cards.map(item => {
+        if (lastIndex < item.zIndex) {
+          lastIndex++;
+          item.zIndex = lastIndex;
+        }
+        return item;
+      })
+      elemToAdd.zIndex = lastIndex + 1;
     }
-  }
+  },
 };
 
 // actions

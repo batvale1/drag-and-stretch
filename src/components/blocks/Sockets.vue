@@ -8,7 +8,11 @@
         <tr class="sockets__tr">
           <th class="sockets__th">From</th>
           <th class="sockets__th">To</th>
-          <th class="sockets__th">Amount</th>
+          <th class="sockets__th">
+            <p class="sockets__th-row">Amount</p>
+            <p class="sockets__th-row">Total count: {{ totalCount }}</p>
+            <p class="sockets__th-row">Total value: {{ totalSum }}</p>
+          </th>
         </tr>
       </thead>
       <tbody class="sockets__tbody">
@@ -64,6 +68,17 @@ export default {
     clear() {
       this.websocket.send('{"op":"unconfirmed_unsub"}');
       this.txNodes = [];
+    }
+  },
+  computed: {
+    totalSum() {
+      return this.txNodes.reduce((acc, item) => {
+        acc += item.value;
+        return acc;
+      }, 0);
+    },
+    totalCount() {
+      return this.txNodes.length;
     }
   },
   created() {

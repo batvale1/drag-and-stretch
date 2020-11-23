@@ -1,17 +1,17 @@
 <template>
   <div class="list" ref="list">
     <ResizableDragAndDrop
-      v-for="(card, index) in cards"
-      :key="index"
+      v-for="card in cards"
+      :key="card.id"
       :x="card.x"
       :y="card.y"
       :width="card.width"
       :height="card.height"
       :zIndex="card.zIndex"
-      :gridStep="40"
+      :gridStep="50"
       @position-change="(payload) => updatePosition(payload, card)"
       @size-change="(payload) => updateSize(payload, card)"
-      @clicked="bringForward(card)"
+      @bring-forward="bringForward(card)"
     >
       <DummyCardContent
         :title="card.index"
@@ -69,6 +69,10 @@ export default {
         height: this.defaultCardHeight,
         width: this.defaultCardWidth
       });
+    },
+    calculateCenter() {
+      this.xCenter = this.$refs.list.offsetWidth / 2;
+      this.yCenter = this.$refs.list.offsetHeight / 2;
     }
   },
   created() {
@@ -77,8 +81,14 @@ export default {
     }
   },
   mounted() {
-    this.xCenter = this.$refs.list.offsetWidth / 2;
-    this.yCenter = this.$refs.list.offsetHeight / 2;
+
+    window.addEventListener('resize', this.calculateCenter);
+    this.$once('hook:beforeDestroy', () => {
+      window.removeEventListener('resize', this.calculateCenter);
+    });
+
+    this.calculateCenter();
+
   }
 }
 </script>
